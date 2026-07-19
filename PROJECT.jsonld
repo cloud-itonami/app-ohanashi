@@ -1,0 +1,50 @@
+{
+  "@context": {
+    "etzhayyim": "https://resources.etzhayyim.com/etzhayyim-project-resources/id/",
+    "schema": "https://schema.org/",
+    "dodaf": "https://resources.etzhayyim.com/etzhayyim-project-resources/id/DM2/",
+    "dependsOn": {
+      "@id": "etzhayyim:dependsOn",
+      "@type": "@id"
+    }
+  },
+  "@type": "etzhayyim:Project",
+  "@id": "https://resources.etzhayyim.com/etzhayyim-project-ohanashi/id/Project/etzhayyim-project-ohanashi",
+  "schema:name": "etzhayyim-project-ohanashi",
+  "schema:description": "Phone-first AI consultation project for seniors. Users call by phone and receive safe, clear guidance with family notification and escalation workflows.",
+  "schema:url": "https://ohanashi.etzhayyim.com",
+  "dependsOn": [
+    "https://resources.etzhayyim.com/etzhayyim-project-iam/id/Project/etzhayyim-project-iam",
+    "https://resources.etzhayyim.com/etzhayyim-project-mailer/id/Project/etzhayyim-project-mailer",
+    "https://resources.etzhayyim.com/etzhayyim-project-ops/id/Project/etzhayyim-project-ops"
+  ],
+  "dodaf:capability": [
+    {
+      "@type": "dodaf:Capability",
+      "schema:name": "Phone AI Consultation",
+      "schema:description": "Accept inbound phone calls, conduct AI dialogue, and return clear recommendations for daily-life concerns."
+    },
+    {
+      "@type": "dodaf:Capability",
+      "schema:name": "Safety Escalation",
+      "schema:description": "Detect emergency/high-risk intent and transfer to operator or callback queue."
+    },
+    {
+      "@type": "dodaf:Capability",
+      "schema:name": "Family Summary and Monitoring",
+      "schema:description": "Share post-call summaries and alerts with approved family/caregiver contacts."
+    }
+  ],
+  "dodaf:performer": [
+    {
+      "@type": "dodaf:Performer",
+      "schema:name": "ohanashi-voice-orchestrator",
+      "schema:description": "Realtime conversation orchestration, guardrails, and escalation control for phone sessions."
+    },
+    {
+      "@type": "dodaf:Performer",
+      "schema:name": "ohanashi-family-portal",
+      "schema:description": "Web portal on ohanashi.etzhayyim.com for consent, notifications, and conversation summaries."
+    }
+  ]
+}
