@@ -1,0 +1,113 @@
+[{:db/id -1
+  :adr/id "app-ohanashi-0001"
+  :adr/title "app-ohanashi が実際に含むもの — 測定と、直さずに記録した理由"
+  :adr/status "accepted"
+  :adr/date "2026-08-18"
+  :adr/doc_type "adr"
+  :adr/source-format "edn"
+  :adr/body "
+# ADR-0001: app-ohanashi が実際に含むもの
+
+**Status**: accepted / **Date**: 2026-08-18 / **Deciders**: Jun Kawasaki
+
+## Context
+
+この repository は 2026-05-21 に etzhayyim/root の 60-apps/etzhayyim-project-ohanashi
+から抽出された。抽出以降、内容についての commit は無く、README.md も無かった。
+入口は README.edn（6 行の EDN メタデータ）だけで、冷たい読み手が
+『何が在って何が無いか』を知る手段が無かった。
+
+fleet 成熟度計測（superproject ADR-2608052000）はこの repo を own=0.0481 と測り、
+docs 軸は 0bp である。0bp の理由は文書が無いことではない —— 設計文書は 5 本
+（12,432 バイト）在る。README.md が無く、operator quickstart が無く、ADR が
+無いことである。
+
+## 測定（2026-08-18、tree f5c85b4）
+
+- 追跡 13 ファイル / 28,044 バイト
+- 実行できるコードは aws/connect/lex-lambda/lambda_function.py（2,844 バイト）1 本のみ
+- テスト 0 本、src/ 無し、CI 無し
+- custody: migration.edn が名指す出所 tree aca35b2c を GitHub から引いて照合。
+  元の 11 ファイル / 27,393 バイトが 1 バイトも変わらず保存されている。
+  追加は README.edn と migration.edn の 2 件のみ（27,393 + 651 = 28,044）
+
+### 発見 1 — 設計された安全装置が 1 つも実装されていない
+
+docs は risk 分類 none|low|medium|high|critical（OHN-010）、critical 時の
+即時転送と callback queue（OHN-011）、判定理由の監査ログ、家族通知
+（OHN-020/021）を定めている。lambda_function.py に risk という文字列は 0 回
+出現する。実装は system prompt の『医療・法律の確定判断は行わない』という
+指示のみで、分類も転送も監査もしない。
+
+### 発見 2 — モデル失敗が成功と区別できない（最重要）
+
+ハンドラは Bedrock 呼び出しを except Exception で丸ごと飲み込み、固定文
+『いま少しつながりにくいです。もう一度ゆっくり話してみてください。』を
+成功時と同じ形（messages + dialogAction ElicitIntent）で返す。ログ・
+メトリクス・risk 信号は出ない。さらにその固定文が sessionAttributes.history に
+『AI:』のターンとして追記され、次ターンのプロンプトに捏造ターンが載る。
+
+boto3 をスタブに差し替えて実測した（docs/operator-quickstart.md §2 に再現手順）:
+入力『胸が苦しい』でモデルが例外を投げても、通話は普通に継続し、
+呼び出し側は失敗を観測できない。
+
+これは superproject ADR-2608136000 が名指しした class そのものである ——
+『測れなかった検査が、測って問題が無かった検査と同じ値を返す』。
+ここでは検査ではなく高齢者からの相談電話の応答面で起きている。
+
+### 発見 3 — 互換しない 2 つの基盤が同居している
+
+docs/260225-mvp-api-wasmcloud-architecture.md は wasmCloud/kotodama
+（mage Deploy、kotodama-runtime、ohanashi.etzhayyim.com）を前提にし、
+docs/260225-connect-lex-ai-deploy.md と aws/ と scripts/ は Amazon Connect +
+Lex V2 + Lambda + Bedrock を前提にする。唯一の実行コードは後者に属し、
+前者には実装が 1 バイトも無い。ohanashi.etzhayyim.com は A レコードを返さない
+（etzhayyim.com は解決する）。
+
+### 発見 4 — デプロイ手順が踏めない
+
+scripts/260225-deploy-connect-lex-ai.sh:25 は
+projects/etzhayyim-project-ohanashi/aws/… から copy するが、この tree に
+そのパスは無い（実体は aws/…）。set -euo pipefail なので AWS を 1 回も
+呼ばずに exit 1 する。AWS CLI を PATH から外して実行し確認した。
+docs 側は 3 箇所で 60-apps/…/70-tools/70-tools/70-tools/scripts/… を案内する
+（70-tools の 3 重は抽出前からの誤り）。パス規約は合計 3 通り混在し、
+そのどれもこの repo の実際の配置ではない。
+
+### 発見 5 — 稼働資源の識別子が commit されている
+
+Connect インスタンス 6294ff1a-…、電話番号 1070476c-…、IAM role ARN
+（account 808985…）。資格情報ではないが、docs 自身が『公開済み AWS キーは
+ローテーションすること』と書いており、鍵が一度露出した経緯を示唆する。
+
+## Decision
+
+1. **測ったことを README.md と docs/operator-quickstart.md に書き、
+   欠陥は直さずに名指しする。** 直すには先に決めるべきことがあるためである
+   （下記 Open questions）。読めない状態のまま直すより、読める状態にしてから
+   決める方が安い。
+2. **数値は検証器に固定する。** scripts/verify-docs-claims.cljs が tree から
+   再計算して照合し、食い違えば exit 1、tree を読み切れなければ exit 2 を返す
+   （0 と区別する）。保存 11 ファイルの sha256 を固定してあるので、custody が
+   崩れれば byte 合計に紛れずに名前で報告される。
+3. **quickstart は踏めるものだけを書く。** AWS を呼ぶ手順は『踏めない』ことと
+   その確かめ方を書く。実際に AWS を呼んだ手順はこの round には無い。
+
+## Open questions（オーナー決定が要る）
+
+- この repo は自己完結するのか、monorepo を参照し続けるのか。パス欠陥 4 の
+  直し方はこれで決まる。
+- wasmCloud/kotodama と Amazon Connect のどちらが正本か。両方を残すなら、
+  どちらが非正本かを文書に書く。
+- Bedrock（外部 LLM）と NOTICE が宣言する Charter Compliance Rider v3.1 の
+  関係。この workspace の他の actor には Murakumo-only を不変条件に持つものが
+  ある。
+- 発見 2 を直す前にこのサービスを人に使わせないこと。直し方は最低限、
+  例外を握り潰さず risk 信号として上げ、critical 経路を実装することである。
+
+## Consequences
+
+- 冷たい読み手が入口 1 つで現在地を把握できるようになる。
+- 数値の陳腐化は検証器が落ちることで分かる（prose は自分が古いことを言えない）。
+- 欠陥は直っていない。この ADR は現在地の記録であって、修理の記録ではない。
+"}]
