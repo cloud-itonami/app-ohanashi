@@ -117,7 +117,7 @@ GitHub 上のその tree を実際に引いて突き合わせた結果:
 ## 検証
 
 ```bash
-nbb scripts/verify-docs-claims.cljk .     # <dir> は先頭に置く
+kbb --backend sci scripts/verify-docs-claims.cljk .     # <dir> は先頭に置く
 ```
 
 この README と `docs/operator-quickstart.md` が述べる数値・存在・不在を
