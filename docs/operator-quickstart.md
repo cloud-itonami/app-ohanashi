@@ -23,7 +23,7 @@ walk した結果**である。手元の worktree の出力ではない。
 git clone git@github.com:cloud-itonami/app-ohanashi.git
 cd app-ohanashi
 REPO=$PWD            # §2 と §3 でこれを使う
-npx --yes nbb scripts/verify-docs-claims.cljs .
+npx --yes nbb scripts/verify-docs-claims.cljk .
 ```
 
 期待する出力（末尾）:

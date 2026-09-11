@@ -7,7 +7,7 @@ workspace の規約）。`ohanashi` は「お話」であって、repo の中身
 
 この repo は `etzhayyim/root` の `60-apps/etzhayyim-project-ohanashi` から
 抽出された。**抽出物であって、動くサービスではない。** 何が在って何が無いかを
-数えたものが以下で、数字はすべて `scripts/verify-docs-claims.cljs` が
+数えたものが以下で、数字はすべて `scripts/verify-docs-claims.cljk` が
 tree から再計算して検査している（食い違ったら CI ではなく検証器が落ちる）。
 
 ## いま在るもの — 13 ファイル / 28,044 バイト
@@ -85,7 +85,7 @@ Compliance Rider v3.1 との関係は**未解決**である。ここでは事実
 GitHub 上のその tree を実際に引いて突き合わせた結果:
 
 - 元の **11 ファイル / 27,393 バイトが 1 バイトも変わらずに保存されている**
-  （sha256 を `scripts/verify-docs-claims.cljs` に固定してある）
+  （sha256 を `scripts/verify-docs-claims.cljk` に固定してある）
 - 追加は `README.edn` と `migration.edn` の 2 件だけ（抽出メタデータ）
 - 11 + 2 = 13 ファイル、27,393 + 651 = 28,044 バイト
 
@@ -117,7 +117,7 @@ GitHub 上のその tree を実際に引いて突き合わせた結果:
 ## 検証
 
 ```bash
-nbb scripts/verify-docs-claims.cljs .     # <dir> は先頭に置く
+nbb scripts/verify-docs-claims.cljk .     # <dir> は先頭に置く
 ```
 
 この README と `docs/operator-quickstart.md` が述べる数値・存在・不在を
