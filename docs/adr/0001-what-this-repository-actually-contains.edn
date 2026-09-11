@@ -86,7 +86,7 @@ Connect インスタンス 6294ff1a-…、電話番号 1070476c-…、IAM role A
    欠陥は直さずに名指しする。** 直すには先に決めるべきことがあるためである
    （下記 Open questions）。読めない状態のまま直すより、読める状態にしてから
    決める方が安い。
-2. **数値は検証器に固定する。** scripts/verify-docs-claims.cljs が tree から
+2. **数値は検証器に固定する。** scripts/verify-docs-claims.cljk が tree から
    再計算して照合し、食い違えば exit 1、tree を読み切れなければ exit 2 を返す
    （0 と区別する）。保存 11 ファイルの sha256 を固定してあるので、custody が
    崩れれば byte 合計に紛れずに名前で報告される。

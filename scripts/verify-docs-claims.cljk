@@ -6,7 +6,7 @@
 ;; absences ("the deploy script's source path is not in this tree"). Prose does
 ;; not notice when it stops being true. This does.
 ;;
-;; Usage:  nbb scripts/verify-docs-claims.cljs [<dir>]     (<dir> FIRST, default ".")
+;; Usage:  nbb scripts/verify-docs-claims.cljk [<dir>]     (<dir> FIRST, default ".")
 ;; Exit:   0 every claim holds · 1 a claim is false · 2 could not answer
 ;;
 ;; Exit 2 is not exit 0. A run that cannot read the tree reports UNDETERMINED and
@@ -30,7 +30,7 @@
    :added-by-this-round #{"README.md"
                           "docs/adr/0001-what-this-repository-actually-contains.edn"
                           "docs/operator-quickstart.md"
-                          "scripts/verify-docs-claims.cljs"}
+                          "scripts/verify-docs-claims.cljk"}
    :monorepo-path-refs 4            ; 3 in docs/ + 1 in the deploy script
    :deploy-cp-path     "projects/etzhayyim-project-ohanashi/aws/connect/lex-lambda/lambda_function.py"
    :risk-tokens-in-lambda 0         ; docs specify none|low|medium|high|critical; the code has none
